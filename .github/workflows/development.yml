@@ -34,7 +34,13 @@ jobs:
         uses: actions/checkout@main
 
       - name: Checkout repository submodules
-        run: git submodule update --init --recursive
+        run: |
+          git rm -q --cached Natives/external/DBNumberedSlider Natives/external/fishhook
+          git config -f .gitmodules --remove-section "submodule.Natives/external/DBNumberedSlider"
+          git config -f .gitmodules --remove-section "submodule.Natives/external/fishhook"
+          git submodule update --init --recursive
+          git clone --depth 1 https://github.com/immago/DBNumberedSlider Natives/external/DBNumberedSlider
+          git clone --depth 1 https://github.com/facebook/fishhook Natives/external/fishhook
 
       - name: Get gl4es latest commit hash
         id: gl4es-sha
