@@ -103,6 +103,19 @@ jobs:
           javac -version || true
           /usr/libexec/java_home -V || true
 
+      - name: Select Xcode 26
+        run: |
+          echo "Xcode installes :"
+          ls -d /Applications/Xcode*.app || true
+          XC=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1)
+          if [ -z "$XC" ]; then
+            echo "Aucun Xcode 26 trouve sur cette machine"
+            exit 1
+          fi
+          echo "Using $XC"
+          sudo xcode-select -s "$XC/Contents/Developer"
+          xcodebuild -version
+
       - name: Build for ${{ matrix.platform_name }}
         run: |
           export PATH=/opt/homebrew/bin:$PATH
