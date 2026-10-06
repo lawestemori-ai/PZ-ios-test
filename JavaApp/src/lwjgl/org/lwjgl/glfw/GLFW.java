@@ -1012,6 +1012,51 @@ public class GLFW
         if (height != null) height.put(internalGetWindow(window).height);
     }
 
+    // ---- Ajouts pour Project Zomboid (lwjglx appelle ces versions IntBuffer/FloatBuffer) ----
+    public static void glfwGetWindowFrameSize(long window, IntBuffer left, IntBuffer top, IntBuffer right, IntBuffer bottom) {
+        // pas de bordure de fenetre sur iOS
+        if (left != null) left.put(left.position(), 0);
+        if (top != null) top.put(top.position(), 0);
+        if (right != null) right.put(right.position(), 0);
+        if (bottom != null) bottom.put(bottom.position(), 0);
+    }
+
+    public static void glfwGetWindowPos(long window, IntBuffer xpos, IntBuffer ypos) {
+        if (xpos != null) xpos.put(xpos.position(), 0);
+        if (ypos != null) ypos.put(ypos.position(), 0);
+    }
+
+    public static void glfwGetWindowContentScale(long window, FloatBuffer xscale, FloatBuffer yscale) {
+        if (xscale != null) xscale.put(xscale.position(), 1.0f);
+        if (yscale != null) yscale.put(yscale.position(), 1.0f);
+    }
+
+    public static void glfwGetMonitorContentScale(long monitor, FloatBuffer xscale, FloatBuffer yscale) {
+        if (xscale != null) xscale.put(xscale.position(), 1.0f);
+        if (yscale != null) yscale.put(yscale.position(), 1.0f);
+    }
+
+    public static void glfwGetMonitorPhysicalSize(long monitor, IntBuffer widthMM, IntBuffer heightMM) {
+        if (widthMM != null) widthMM.put(widthMM.position(), 140);
+        if (heightMM != null) heightMM.put(heightMM.position(), 65);
+    }
+
+    public static String glfwGetMonitorName(long monitor) {
+        return "Amethyst Display";
+    }
+
+    public static void glfwHideWindow(long window) {}
+    public static void glfwIconifyWindow(long window) {}
+    public static void glfwRestoreWindow(long window) {}
+    public static void glfwMaximizeWindow(long window) {}
+    public static void glfwFocusWindow(long window) {}
+    public static void glfwSetWindowAspectRatio(long window, int numer, int denom) {}
+    public static float glfwGetWindowOpacity(long window) { return 1.0f; }
+    public static void glfwSetWindowOpacity(long window, float opacity) {}
+    public static long glfwGetWindowUserPointer(long window) { return 0L; }
+    public static void glfwSetWindowUserPointer(long window, long pointer) {}
+    // ---- Fin des ajouts ----
+
     public static void glfwSetWindowSizeLimits(@NativeType("GLFWwindow *") long window, int minwidth, int minheight, int maxwidth, int maxheight) {
     }
 
