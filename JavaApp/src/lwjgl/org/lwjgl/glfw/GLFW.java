@@ -32,6 +32,7 @@ public class GLFW
 {
     static FloatBuffer joystickData = (FloatBuffer)FloatBuffer.allocate(8).flip();
     static ByteBuffer buttonData = (ByteBuffer)ByteBuffer.allocate(8).flip();
+    static ByteBuffer hatData = (ByteBuffer)ByteBuffer.allocate(8).flip();
     /** The major version number of the GLFW library. This is incremented when the API is changed in non-compatible ways. */
     public static final int GLFW_VERSION_MAJOR = 3;
 
@@ -1235,6 +1236,11 @@ public class GLFW
         }else return null;
     }
     public static ByteBuffer glfwGetjoystickHats(int jid) {
+        return null;
+    }
+    // Nom correct dans LWJGL 3 (lwjglx l'appelle avec ce nom)
+    public static ByteBuffer glfwGetJoystickHats(int jid) {
+        if (jid == 0) return hatData;
         return null;
     }
     public static boolean glfwJoystickIsGamepad(int jid) {
