@@ -1216,9 +1216,8 @@ public class GLFW
     }
 
     public static boolean glfwJoystickPresent(int jid) {
-        if(jid == 0) {
-            return true;
-        }else return false;
+        // Project Zomboid : pas de manette fantome (sinon le jeu passe en mode manette)
+        return false;
     }
     public static String glfwGetJoystickName(int jid) {
         if(jid == 0) {
