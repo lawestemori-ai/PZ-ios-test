@@ -240,7 +240,11 @@ int launchJVM(NSString *username, id launchTarget, int width, int height, int mi
     margv[++margc] = "-Xms128M";
     margv[++margc] = [NSString stringWithFormat:@"-Xmx%dM", allocmem].UTF8String;
     margv[++margc] = [NSString stringWithFormat:@"-Djava.library.path=%@/Frameworks:%s/natives", NSBundle.mainBundle.bundlePath, getenv("POJAV_GAME_DIR")].UTF8String;
-    margv[++margc] = [NSString stringWithFormat:@"-Duser.dir=%@", gameDir].UTF8String;
+    // PZ compare ses chemins : user.dir doit etre le chemin reel (/private/var/...)
+    char *pzCanonicalDir = realpath(gameDir.UTF8String, NULL);
+    NSString *canonicalGameDir = pzCanonicalDir ? @(pzCanonicalDir) : gameDir;
+    if (pzCanonicalDir) free(pzCanonicalDir);
+    margv[++margc] = [NSString stringWithFormat:@"-Duser.dir=%@", canonicalGameDir].UTF8String;
     margv[++margc] = [NSString stringWithFormat:@"-Duser.home=%s", getenv("POJAV_HOME")].UTF8String;
     margv[++margc] = [NSString stringWithFormat:@"-Duser.timezone=%@", NSTimeZone.localTimeZone.name].UTF8String;
     margv[++margc] = [NSString stringWithFormat:@"-DUIScreen.maximumFramesPerSecond=%d", (int)UIScreen.mainScreen.maximumFramesPerSecond].UTF8String;
