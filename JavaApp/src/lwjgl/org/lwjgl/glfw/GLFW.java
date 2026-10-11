@@ -33,6 +33,8 @@ public class GLFW
     static FloatBuffer joystickData = (FloatBuffer)FloatBuffer.allocate(8).flip();
     static ByteBuffer buttonData = (ByteBuffer)ByteBuffer.allocate(8).flip();
     static ByteBuffer hatData = (ByteBuffer)ByteBuffer.allocate(8).flip();
+    // Diagnostic PZ : compteurs pour les messages [PZ-INPUT]
+    static int pzPollCount = 0, pzLastInputMode = -1, pzLastInputValue = -1;
     /** The major version number of the GLFW library. This is incremented when the API is changed in non-compatible ways. */
     public static final int GLFW_VERSION_MAJOR = 3;
 
@@ -631,6 +633,7 @@ public class GLFW
     // Generated stub callback methods
     public static GLFWCharCallback glfwSetCharCallback(@NativeType("GLFWwindow *") long window, @Nullable @NativeType("GLFWcharfun") GLFWCharCallbackI cbfun) {
         GLFWCharCallback lastCallback = mGLFWCharCallback;
+        System.out.println("[PZ-INPUT] glfwSetCharCallback window=" + window + " actif=" + (cbfun != null));
         if (cbfun == null) mGLFWCharCallback = null;
         else mGLFWCharCallback = GLFWCharCallback.createSafe(nglfwSetCharCallback(window, memAddressSafe(cbfun)));
 
@@ -655,6 +658,7 @@ public class GLFW
 
     public static GLFWCursorPosCallback glfwSetCursorPosCallback(@NativeType("GLFWwindow *") long window, @Nullable @NativeType("GLFWcursorposfun") GLFWCursorPosCallbackI cbfun) {
         GLFWCursorPosCallback lastCallback = mGLFWCursorPosCallback;
+        System.out.println("[PZ-INPUT] glfwSetCursorPosCallback window=" + window + " actif=" + (cbfun != null));
         if (cbfun == null) mGLFWCursorPosCallback = null;
         else mGLFWCursorPosCallback = GLFWCursorPosCallback.createSafe(nglfwSetCursorPosCallback(window, memAddressSafe(cbfun)));
 
@@ -695,6 +699,7 @@ public class GLFW
 
     public static GLFWKeyCallback glfwSetKeyCallback(@NativeType("GLFWwindow *") long window, @Nullable @NativeType("GLFWkeyfun") GLFWKeyCallbackI cbfun) {
         GLFWKeyCallback lastCallback = mGLFWKeyCallback;
+        System.out.println("[PZ-INPUT] glfwSetKeyCallback window=" + window + " actif=" + (cbfun != null));
         if (cbfun == null) mGLFWKeyCallback = null;
         else mGLFWKeyCallback = GLFWKeyCallback.createSafe(nglfwSetKeyCallback(window, memAddressSafe(cbfun)));
 
@@ -711,6 +716,7 @@ public class GLFW
 
     public static GLFWMouseButtonCallback glfwSetMouseButtonCallback(@NativeType("GLFWwindow *") long window, @Nullable @NativeType("GLFWmousebuttonfun") GLFWMouseButtonCallbackI cbfun) {
         GLFWMouseButtonCallback lastCallback = mGLFWMouseButtonCallback;
+        System.out.println("[PZ-INPUT] glfwSetMouseButtonCallback window=" + window + " actif=" + (cbfun != null));
         if (cbfun == null) mGLFWMouseButtonCallback = null;
         else mGLFWMouseButtonCallback = GLFWMouseButtonCallback.createSafe(nglfwSetMouseButtonCallback(window, memAddressSafe(cbfun)));
 
@@ -719,6 +725,7 @@ public class GLFW
 
     public static GLFWScrollCallback glfwSetScrollCallback(@NativeType("GLFWwindow *") long window, @Nullable @NativeType("GLFWscrollfun") GLFWScrollCallbackI cbfun) {
         GLFWScrollCallback lastCallback = mGLFWScrollCallback;
+        System.out.println("[PZ-INPUT] glfwSetScrollCallback window=" + window + " actif=" + (cbfun != null));
         if (cbfun == null) mGLFWScrollCallback = null;
         else mGLFWScrollCallback = GLFWScrollCallback.createSafe(nglfwSetScrollCallback(window, memAddressSafe(cbfun)));
 
@@ -988,6 +995,7 @@ public class GLFW
 
         mGLFWWindowMap.put(ptr, win);
         mainContext = ptr;
+        System.out.println("[PZ-INPUT] glfwCreateWindow handle=" + ptr + " taille=" + win.width + "x" + win.height);
         return ptr;
         //Return our context
     }
@@ -1056,6 +1064,16 @@ public class GLFW
     public static void glfwSetWindowOpacity(long window, float opacity) {}
     public static long glfwGetWindowUserPointer(long window) { return 0L; }
     public static void glfwSetWindowUserPointer(long window, long pointer) {}
+    public static boolean glfwPlatformSupported(int platform) {
+        return platform == GLFW_PLATFORM_X11;
+    }
+    public static void glfwGetMonitorContentScale(long monitor, float[] xscale, float[] yscale) {
+        if (xscale != null) xscale[0] = 1.0f;
+        if (yscale != null) yscale[0] = 1.0f;
+    }
+    public static long nglfwGetJoystickHats(int jid, long count) {
+        return 0L;
+    }
     // ---- Fin des ajouts ----
 
     public static void glfwSetWindowSizeLimits(@NativeType("GLFWwindow *") long window, int minwidth, int minheight, int maxwidth, int maxheight) {
@@ -1074,6 +1092,7 @@ public class GLFW
     }
 
     public static void glfwShowWindow(long window) {
+        System.out.println("[PZ-INPUT] glfwShowWindow window=" + window);
         nglfwSetShowingWindow(window);
     }
     public static void glfwWindowHint(int hint, int value) {
@@ -1103,6 +1122,7 @@ public class GLFW
     public static void glfwSetWindowIcon(@NativeType("GLFWwindow *") long window, @Nullable @NativeType("GLFWimage const *") GLFWImage.Buffer images) {}
 
     public static void glfwPollEvents() {
+        if (pzPollCount++ % 600 == 0) System.out.println("[PZ-INPUT] glfwPollEvents appels=" + pzPollCount + " fenetres=" + mGLFWWindowMap.size());
         for (Long ptr : mGLFWWindowMap.keySet()) callJV(ptr, Functions.PumpEvents);
         callV(Functions.RewindEvents);
     }
@@ -1138,6 +1158,10 @@ public class GLFW
     }
 
     public static void glfwSetInputMode(@NativeType("GLFWwindow *") long window, int mode, int value) {
+        if (mode != pzLastInputMode || value != pzLastInputValue) {
+            pzLastInputMode = mode; pzLastInputValue = value;
+            System.out.println("[PZ-INPUT] glfwSetInputMode mode=0x" + Integer.toHexString(mode) + " valeur=0x" + Integer.toHexString(value));
+        }
         if (mode == GLFW_CURSOR) {
             switch (value) {
                 case GLFW_CURSOR_DISABLED:
