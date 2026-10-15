@@ -752,6 +752,11 @@ public class GLFW
         GLFWWindowFocusCallback lastCallback = mGLFWWindowFocusCallback;
         if (cbfun == null) mGLFWWindowFocusCallback = null;
         else mGLFWWindowFocusCallback = GLFWWindowFocusCallback.create(cbfun);
+        if (cbfun != null) {
+            // PZ (lwjglx) ne traite les entrees que si la fenetre est 'active' : on signale le focus
+            try { cbfun.invoke(window, true); System.out.println("[PZ-INPUT] focus signale (callback enregistre)"); }
+            catch (Throwable t) { t.printStackTrace(); }
+        }
         return lastCallback;
     }
 
@@ -992,6 +997,7 @@ public class GLFW
 
         win.windowAttribs.put(GLFW_HOVERED, 1);
         win.windowAttribs.put(GLFW_VISIBLE, 1);
+        win.windowAttribs.put(GLFW_FOCUSED, 1);
 
         mGLFWWindowMap.put(ptr, win);
         mainContext = ptr;
@@ -1094,6 +1100,10 @@ public class GLFW
     public static void glfwShowWindow(long window) {
         System.out.println("[PZ-INPUT] glfwShowWindow window=" + window);
         nglfwSetShowingWindow(window);
+        if (mGLFWWindowFocusCallback != null) {
+            try { mGLFWWindowFocusCallback.invoke(window, true); System.out.println("[PZ-INPUT] focus signale (fenetre affichee)"); }
+            catch (Throwable t) { t.printStackTrace(); }
+        }
     }
     public static void glfwWindowHint(int hint, int value) {
         long __functionAddress = Functions.SetWindowHint;
@@ -1122,7 +1132,7 @@ public class GLFW
     public static void glfwSetWindowIcon(@NativeType("GLFWwindow *") long window, @Nullable @NativeType("GLFWimage const *") GLFWImage.Buffer images) {}
 
     public static void glfwPollEvents() {
-        if (pzPollCount++ % 600 == 0) System.out.println("[PZ-INPUT] glfwPollEvents appels=" + pzPollCount + " fenetres=" + mGLFWWindowMap.size());
+        if (pzPollCount++ % 3000000 == 0) System.out.println("[PZ-INPUT] glfwPollEvents appels=" + pzPollCount + " fenetres=" + mGLFWWindowMap.size());
         for (Long ptr : mGLFWWindowMap.keySet()) callJV(ptr, Functions.PumpEvents);
         callV(Functions.RewindEvents);
     }
